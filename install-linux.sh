@@ -9,7 +9,15 @@ else
   fi
 
   sudo apt-get update
-  sudo apt-get install git libuv1-dev libssl-dev gcc g++ cmake make
+  sudo apt-get -y install git 
+  sudo apt-get -y install libuv1-dev 
+  sudo apt-get -y install libssl-dev 
+  sudo apt-get -y install gcc 
+  sudo apt-get -y install g++ 
+  sudo apt-get -y install cmake 
+  sudo apt-get -y install make
+  sudo apt-get -y install openssl
+  sudo apt-get -y install zlib1g-dev
 fi
 
 git clone https://github.com/uWebSockets/uWebSockets 
