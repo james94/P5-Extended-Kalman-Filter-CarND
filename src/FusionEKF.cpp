@@ -34,30 +34,6 @@ FusionEKF::FusionEKF() {
 
   // Radar jacobian measurement matrix Hj_
   Hj_ = MatrixXd(3, 4);
-
-  // 4D state vector
-  ekf_.x_ = VectorXd(4); 
-
-  // State covariance matrix
-  ekf_.P_ = MatrixXd(4, 4); 
-  ekf_.P_ << 1, 0, 0, 0,
-             0, 1, 0, 0,
-             0, 0, 1000, 0,
-             0, 0, 0, 1000;
-
-  // Initial state transition matrix
-  ekf_.F_ = MatrixXd(4, 4); 
-  ekf_.F_ << 1, 0, 1, 0,
-             0, 1, 0, 1,
-             0, 0, 1, 0,
-             0, 0, 0, 1;
-
-  // Process noise covariance matrix
-  ekf_.Q_ = MatrixXd(4, 4); 
-
-  // Set process noise components ax, ay for process covariance matrix Q
-  noise_ax = 9;
-  noise_ay = 9;
 }
 
 /**
@@ -90,20 +66,50 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    * Initialization
    */
   if (!is_initialized_) {
+
+    // 4D state vector
+    ekf_.x_ = VectorXd(4); 
+
+    // State covariance matrix
+    ekf_.P_ = MatrixXd(4, 4); 
+    ekf_.P_ << 1, 0, 0, 0,
+               0, 1, 0, 0,
+               0, 0, 1000, 0,
+               0, 0, 0, 1000;    
+
+    // Initial state transition matrix
+    ekf_.F_ = MatrixXd(4, 4); 
+    ekf_.F_ << 1, 0, 1, 0,
+               0, 1, 0, 1,
+               0, 0, 1, 0,
+               0, 0, 0, 1;
+
+    // Process noise covariance matrix
+    ekf_.Q_ = MatrixXd(4, 4); 
+    // Set process noise components ax, ay for process covariance matrix Q
+    noise_ax = 9;
+    noise_ay = 9;
+
     // Initialize Kalman Filter position vector with first sensor measurements
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-      // Intialize state ekf_.x_ with first radar measurement (ro, theta, ro_dot)
-      ekf_.x_ << measurement_pack.raw_measurements_[0], // ro
-                 measurement_pack.raw_measurements_[1], // theta
-                 measurement_pack.raw_measurements_[2], // ro_dot
-                 0;
+      // Convert radar from polar to cartesian coordinate system
+      double rho = measurement_pack.raw_measurements_[0];
+      double phi = measurement_pack.raw_measurements_[1];
+      double px = rho * cos(phi);
+      double py = rho * sin(phi);
+
+      // Intialize state ekf_.x_ with first radar measurement (px, py)
+      ekf_.x_ << px, // rho * cos(phi)
+                 py, // rho * sin(phi)
+                 0, // although radar gives velocity data in range rate rho dot,
+                 0; // it doesn't contain enough info to compute velocities vx,vy
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       // Intialize state ekf_.x_ with first laser measurement (px, py)
       ekf_.x_ << measurement_pack.raw_measurements_[0], // px
                  measurement_pack.raw_measurements_[1], // py
-                 0,
+                 0, // there is no velocity data for lidar measurement
                  0;
     }
 
@@ -148,11 +154,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
     // Compute the new jacobian Hj to linearize measurement function h(x')
     Hj_ = tools.CalculateJacobian(ekf_.x_);
-    ekf_.H_ = MatrixXd(3, 4);
     ekf_.H_ = Hj_;
 
     // Set up radar measurement covariance matrix
-    ekf_.R_ = MatrixXd(3, 3);
     ekf_.R_ = R_radar_;
 
     // Call measurement UpdateEKF with radar data to update state and covariance
@@ -162,11 +166,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     // Set up kalman filter with laser H and R matrices
 
     // Set up lidar measurement matrix
-    ekf_.H_ = MatrixXd(2, 4); 
     ekf_.H_ = H_laser_;
 
     // Set up lidar measurement covariance matrix
-    ekf_.R_ = MatrixXd(2, 2);
     ekf_.R_ = R_laser_;
 
     // Call measurement Update with lidar data to update state and covariance
