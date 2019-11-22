@@ -47,11 +47,7 @@ class FusionEKF {
 
   // process noise components ax, ay of random acceleration noise vector 'v'. 
   float noise_ax;
-  float noise_ay;  
-
-  // measurement noise components px, py of vector 'w'
-  float noise_px;
-  float noise_py;
+  float noise_ay;
 };
 
 #endif // FusionEKF_H_
