@@ -46,6 +46,19 @@ class KalmanFilter {
    */
   void UpdateEKF(const Eigen::VectorXd &z);
 
+  /**
+   * Common Update method between lidar and radar, but differs
+   * based on y error. y error is the sensor error between
+   * the actual sensor measurement state and predicted state.
+   * There is lidar y for finishing the state update using
+   * standard Kalman Filter. 
+   * There is radar y for finishing the state update using
+   * Extended Kalman Filter.
+   * This function gets called inside Update() or UpdateEKF().
+   * @param y The lidar or radar sensor error for state
+   */ 
+  void UpdateWithY(const Eigen::VectorXd &y);
+
   // state vector
   Eigen::VectorXd x_;
 
