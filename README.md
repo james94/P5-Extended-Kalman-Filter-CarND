@@ -143,7 +143,7 @@ Connected!!!
 
 ### Summary
 
-Congratulations, that is it for this project. You just ran the demo for an Extended Kalman Filter C++ program with a Unity simulator. We saw RMSE reporting in the simulator to tell us how well our Extended Kalman Filter performed with tracking an object's position and velocity from a car.
+Congratulations, that is it for this project. You just ran the demo for an Extended Kalman Filter C++ program with a Unity simulator. We saw RMSE reporting in the simulator to tell us how well our Extended Kalman Filter performed with tracking an object's position and velocity from a car. When testing **Dataset 1**, we saw that **RMSE** reached `[0.0974, 0.0855, 0.4517, 0.4404]` for evaluating EKF performance during the simulation. Similarly, when testing **Dataset 2**, we saw that **RMSE** reached `[0.0726, 0.0967, 0.4582, 0.4971]` for evaluating EKF performance during the simulation.
 
 If you are interested in knowing more about the input and output data communication between the simulator client and C++ program software server, refer to the next section. If you are interested in learning more about the coding style used for this project, refer to **Coding Style** section below.
 
