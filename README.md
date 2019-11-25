@@ -1,51 +1,33 @@
-# Extended Kalman Filter Project Starter Code
-Self-Driving Car Engineer Nanodegree Program
+# Project: Extended Kalman Filter
 
-In this project you will utilize a kalman filter to estimate the state of a moving object of interest with noisy lidar and radar measurements. Passing the project requires obtaining RMSE values that are lower than the tolerance outlined in the project rubric. 
+[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
-This project involves the Term 2 Simulator which can be downloaded [here](https://github.com/udacity/self-driving-car-sim/releases).
+Root Mean Squared Error (RMSE) for tracking an object's position and velocity from the car for **Dataset1** in the simulator:
 
-This repository includes two files that can be used to set up and install [uWebSocketIO](https://github.com/uWebSockets/uWebSockets) for either Linux or Mac systems. For windows you can use either Docker, VMware, or even [Windows 10 Bash on Ubuntu](https://www.howtogeek.com/249966/how-to-install-and-use-the-linux-bash-shell-on-windows-10/) to install uWebSocketIO. Please see the uWebSocketIO Starter Guide page in the classroom within the EKF Project lesson for the required version and installation scripts.
+![ekm-rmse-dataset1-lidar.jpg](Docs/writeup/ekm-rmse-dataset1-lidar.jpg)
 
-Once the install for uWebSocketIO is complete, the main program can be built and run by doing the following from the project top directory.
+Dataset1 starts with lidar, then alternates to radar and does this alternation until reaching end of the simulation.
 
-1. mkdir build
-2. cd build
-3. cmake ..
-4. make
-5. ./ExtendedKF
-
-Tips for setting up your environment can be found in the classroom lesson for this project.
-
-Note that the programs that need to be written to accomplish the project are src/FusionEKF.cpp, src/FusionEKF.h, kalman_filter.cpp, kalman_filter.h, tools.cpp, and tools.h
-
-The program main.cpp has already been filled out, but feel free to modify it.
-
-Here is the main protocol that main.cpp uses for uWebSocketIO in communicating with the simulator.
-
-
-**INPUT**: values provided by the simulator to the c++ program
-
-["sensor_measurement"] => the measurement that the simulator observed (either lidar or radar)
-
-
-**OUTPUT**: values provided by the c++ program to the simulator
-
-["estimate_x"] <= kalman filter estimated position x
-
-["estimate_y"] <= kalman filter estimated position y
-
-["rmse_x"]
-
-["rmse_y"]
-
-["rmse_vx"]
-
-["rmse_vy"]
-
+Overview
 ---
 
-## Other Important Dependencies
+The purpose of this project is to use an **Extended Kalman Filter (EKF)** to estimate the state of a moving object of interest, such as a bicycle, with noisy lidar and radar measurements. We were given existing code infrastructure for the EKF project that already had code written to communicate with a Udacity's Unity simulator client from our C++ program that acted as a web server. This communication allowed for extracting the client's sensor data. Our job was to write the sensor fusion flow (data pipeline) to perform initializations, predictions and updates on the sensor measurement data. To build this part of the data pipeline required background knowledge of differential equations and linear algebra because math equations for computing the predicted step and measurement update step were required. The update step was different for lidar and radar. With lidar, we could use the standard Kalman Filter equations because lidar has linear data. However, for radar, we needed to use the EKF equations because we were dealing with radar's nonlinear data. Finally, once the state's position and velocity data was processed, it was compared with the ground truth state to calculate the RMSE for tracking an object's position and velocity from the car. When the C++ program was executed and the simulator was launched, the C++ program would load the RMSE into the simulator. The simulator would display the RMSE as it was running. The RMSE had to meet Udacity's project rubric specifications [px, py, vx, vy] = [0.11, 0.11, 0.52, 0.52].
+
+Contents
+---
+
+- **[src](src/)**: contains source code for the project
+- **[src/main.cpp](src/main.cpp)**: main file is executed after running **./ExtendedKF** program. main.cpp acts a web server that reads radar or lidar data from the simulator client. main.cpp then calls on **ProcessMeasurement()**, located in **[FusionEKF.cpp](src/FusionEKF.cpp)** file, to run the sensor fusion data flow. This flow initializes the EKF variables, performs a prediction and measurement update step to track the object's state, position and velocity. The predict and update steps are defined in the **[kalman_filter.cpp](src/kalman_filter.cpp)**. Finally, main.cpp calls **CalculateRMSE()**, located in **[tools.cpp](src/tools.cpp)**, to calculate the error between the estimated state and ground truth state.
+- **[Docs](Docs)**: contains images, txt files that describe the simulated sensor data, and later will have a writeup discussing how I implemented the EKF for sensor fusion (lidar, radar)
+- **[ide_profiles](ide_profiles)**: contains folders to import the code into Eclipse or xcode. You could also open the project from base in a text editor of your choice, such as MS Visual Studio Code or Atom
+- **[CMakeLists.txt](CMakeLists.txt)**: contains directives and instructions describing the project's source files and targets (executable, library, or both). It is a build configuration file that cmake uses to generate makefiles. Then the make command is used to manage compiling the project, use a compiler to compile the program and generate executables. In our case, we retrieve the **ExtendedKF** executable file, machine language, that runs the c++ program directly on the computer.
+- **[install-linux.sh](install-linux.sh)**: contains bash code to install the tools necessary to run the EKF project on linux. This linux script can be run inside Windows 10 Bash on Ubuntu. There is a similar install script for mac.
+- **README.md(README.md)**: provides overview of the project and how to set it up
+
+Dependencies
+---
+
+This project requires the **Term 2 Simulator**, which can be downloaded from this [GitHub link](https://github.com/udacity/self-driving-car-sim/releases).
 
 * cmake >= 3.5
   * All OSes: [click here for installation instructions](https://cmake.org/install/)
@@ -58,77 +40,145 @@ Here is the main protocol that main.cpp uses for uWebSocketIO in communicating w
   * Mac: same deal as make - [install Xcode command line tools](https://developer.apple.com/xcode/features/)
   * Windows: recommend using [MinGW](http://www.mingw.org/)
 
-## Basic Build Instructions
+How to Run the Demo
+---
 
-1. Clone this repo.
-2. Make a build directory: `mkdir build && cd build`
-3. Compile: `cmake .. && make` 
-   * On windows, you may need to run: `cmake .. -G "Unix Makefiles" && make`
-4. Run it: `./ExtendedKF `
+### Build & Compile the EKF C++ Program
 
-## Editor Settings
+Open your terminal ([Windows 10 Ubuntu Bash Shell](), Linux Shell, Mac OS X Shell), then clone a copy of the project onto your computer:
 
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
+~~~
+git clone https://github.com/james94/P5-Extended-Kalman-Filter-CarND
+~~~
 
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
+This project requires using open source package **[uWebSocketIO](https://github.com/uNetworking/uWebSockets)**. This package facilitates the connection between the simulator and C++ code used in this EKF project by setting up a web socket server connection from the C++ program to the simulator. The C++ program software is a web server and the simulator is a client. There are two scripts for installing **uWebSocketIO** - one for Linux and the other for macOS. 
+
+Run the shell script below to install **uWebSocketIO**, build and compile the C++ EKF program:
+
+~~~bash
+cd P5-Extended-Kalman-Filter-CarND
+# Linux or Windows 10 Ubuntu (18.04) Bash Shell
+./install-ubuntu.sh
+
+# Mac OS X Shell
+./install-mac.sh
+~~~
+
+At the end of the install script, the **make** build automation tool uses the compiler to compile the project and the following executable program **ExtendedKF** will be generated in the **build** folder. Run the EKF program with the command below:
+
+~~~bash
+./ExtendedKF
+~~~
+
+Let's say you make updates to the C++ EKF program, all we need to do is rerun the build and compile commands using the shell commands below:
+
+~~~bash
+cd P5-Extended-Kalman-Filter-CarND
+mkdir build
+cd build
+cmake .. && make
+~~~
+
+Rerun the EKF program with the command below:
+
+~~~bash
+./ExtendedKF
+~~~
+
+The output you will receive in your terminal:
+
+~~~bash
+Listening to port 4567
+~~~
+
+Now we need to finish connecting the C++ program to the simulator.
+
+### Launch the Simulator and Connect the C++ Program
+
+Go to the folder where  you downloaded **Term 2 Simulator**, decompress the **term2_sim_{your_OS}** and double click on **term2_sim** to launch the program.
+
+Click **Play!**. Select **Project 1/2: EKF  and UKF**.
+
+Now referring back to your terminal, you should see an update:
+
+~~~bash
+Listening to port 4567
+Connected!!!
+~~~
+
+Now the simulator and the C++ program are connected. 
+
+### Report RMSE for Tracking Position and Velocity
+
+Head back to the simulator, select **Dataset 1** or **Dataset 2**, then press **Start**. 
+
+What will happen now is that data alternating between lidar and radar is sent to the C++ program, EKF calculations are performed to retrieve RMSE in order to evaluate EKF performance with tracking an object's position and velocity from the car for **Dataset X** in the simulator.
+
+What you should see in the **simulator client** if you selected **Dataset 2**:
+
+![ekm-rmse-dataset2-radar.jpg](Docs/writeup/ekm-rmse-dataset2-radar.jpg)
+
+Dataset2 is a reversed version of Dataset1, it starts with radar, then alternates to lidar and does this alternation until reaching end of the simulation.
+
+What you should see in the **terminal server** if you selected **Dataset 2** in your simulator client:
+
+~~~bash
+Listening to port 4567
+Connected!!!
+~~~
+
+The terminal can be a good place to see your debug (ex: cout) statements for when you are debugging the C++ EKF program.
+
+Once the simulation ends, to safely close the C++ program from your terminal, press `ctrl+c`. Then to reopen the C++ program, `./ExtendedKF`. This procedure refreshes the Kalman Filter. You should do this procedure when trying to run a different data set or running the same data set multiple times in a row. Otherwise, the RMSE values will become large because the previous different filter results are still being observed in memory. 
+
+You should see the shell output after safely closing the C++ program:
+
+~~~bash
+Listening to port 4567
+Connected!!!
+^C
+~~~
+
+### Summary
+
+Congratulations, that is it for this project. You just ran the demo for an Extended Kalman Filter C++ program with a Unity simulator. We saw RMSE reporting in the simulator to tell us how well our Extended Kalman Filter performed with tracking an object's position and velocity from a car.
+
+If you are interested in knowing more about the input and output data communication between the simulator client and C++ program software server, refer to the next section. If you are interested in learning more about the coding style used for this project, refer to **Coding Style** section below.
+
+### Input and Output Data Between Client and Server 
+
+Here is the main protocol that main.cpp uses for uWebSocketIO in communicating with the simulator.
+
+**INPUT**: values provided by the simulator client to the c++ program software server
+
+["sensor_measurement"] => the measurement that the simulator observed (either lidar or radar)
+
+
+**OUTPUT**: values provided by the c++ program software server to the simulator client
+
+["estimate_x"] <= kalman filter estimated position x
+
+["estimate_y"] <= kalman filter estimated position y
+
+["rmse_x"] <= root mean squared error position x
+
+["rmse_y"] <= root mean squared error position y
+
+["rmse_vx"] <= root mean squared error velocity x
+
+["rmse_vy"] <= root mean squared error velocity y
+
+---
 
 ## Code Style
 
 Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
 
-## Generating Additional Data
+## Programs Written To Accomplish Project
 
-This is optional!
-
-If you'd like to generate your own radar and lidar data, see the
-[utilities repo](https://github.com/udacity/CarND-Mercedes-SF-Utilities) for
-Matlab scripts that can generate additional data.
-
-## Project Instructions and Rubric
-
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
-
-More information is only accessible by people who are already enrolled in Term 2 (three-term version) or Term 1 (two-term version)
-of CarND. If you are enrolled, see the Project Resources page in the classroom
-for instructions and the project rubric.
-
-## Hints and Tips!
-
-* You don't have to follow this directory structure, but if you do, your work
-  will span all of the .cpp files here. Keep an eye out for TODOs.
-* Students have reported rapid expansion of log files when using the term 2 simulator.  This appears to be associated with not being connected to uWebSockets.  If this does occur,  please make sure you are conneted to uWebSockets. The following workaround may also be effective at preventing large log files.
-
-    + create an empty log file
-    + remove write permissions so that the simulator can't write to log
- * Please note that the ```Eigen``` library does not initialize ```VectorXd``` or ```MatrixXd``` objects with zeros upon creation.
-
-## Call for IDE Profiles Pull Requests
-
-Help your fellow students!
-
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to ensure
-that students don't feel pressured to use one IDE or another.
-
-However! We'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
-
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
-
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
-
-Regardless of the IDE used, every submitted project must
-still be compilable with cmake and make.
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
-
+- **[FusionEKF.cpp](src/FusionEKF.cpp)**: sensor fusion flow receives simulator client data from main.cpp, handles lidar or radar data prediction and measurement update steps and updates the state estimate position and velocity for main.cpp
+- **[src/FusionEKF.h](src/FusionEKF.h)**
+- **[kalman_filter.cpp](src/kalman_filter.cpp)**: defines the algorithms (Predict(), Update(), UpdateEKF()) for prediction and measurement update steps for lidar and radar
+- **[kalman_filter.h](src/kalman_filter.h)**
+- **[tools.cpp](src/tools.cpp)**: defines root mean squared error calculation for main.cpp and  jacobian computation for FusionEKF.cpp
+- **[tools.h](src/tools.h)**
