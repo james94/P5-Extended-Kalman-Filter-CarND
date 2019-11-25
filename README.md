@@ -2,7 +2,7 @@
 
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
-Root Mean Squared Error (RMSE) for tracking an object's position and velocity from the car for **Dataset1** in the simulator:
+Root Mean Squared Error (RMSE) evaluating the Extended Kalman Filter's performance on tracking an object's position and velocity from the car for **Dataset1** in the simulator:
 
 ![ekm-rmse-dataset1-lidar.jpg](Docs/writeup/ekm-rmse-dataset1-lidar.jpg)
 
@@ -63,6 +63,8 @@ cd P5-Extended-Kalman-Filter-CarND
 # Mac OS X Shell
 ./install-mac.sh
 ~~~
+
+> **WARNING**: for the above shell script, choose the one appropriate for your OS
 
 At the end of the install script, the **make** build automation tool uses the compiler to compile the project and the following executable program **ExtendedKF** will be generated in the **build** folder. Run the EKF program with the command below:
 
